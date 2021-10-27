@@ -74,23 +74,3 @@ x<- dat_df %>% select(ID) %>%  bind_cols(d) %>%
         axis.text.y = element_text(size = 6), legend.title = element_text(size = 8, hjust = 0.1),
         title = element_blank())
 x
-ggsave("heatmap_ftw_4.png", units = "cm", width = 20, height = 8, dpi = 1600)
-scico_palette_show()
-library(rayshader)  
-x
-##############
-rayshader::plot_gg(x, height = 4, width = 8, multicore = T, zoom = 0.6, phi = 30, theta = 45, sunangle = 225)
-render_highquality(filename = "HEAT_3D_HQ_4.png")
-render_highquality(filename = "HEAT_3D_HQ_5.png", lightdirection = 60)
-library(gifski)
-render_movie("Heat_movie_1.gif")
-####
-
-
-rayshader::plot_gg(x, width = , multicore = T, zoom = 0.6, phi = 30, theta = 45, sunangle = 225)
-
-rayshader::plot_gg(x, height = 8, width = 20, multicore = T, zoom = 0.6, phi = 30, theta = 45, sunangle = 225)
-render_snapshot(filename = "HEAT_3D_2.png")
-render_highquality(filename = "HEAT_3D_HQ_3.png", lightdirection = 95, lightaltitude = 60)
-snapshot3d("3Dplot_1.png", fmt = "png", width = 800, height = 400)
-ggsave("HEAT_3D_FTW__.png", units = "cm", height = 10, width = 20, dpi = 1200)
