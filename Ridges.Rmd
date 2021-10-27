@@ -1,0 +1,178 @@
+---
+title: "Ridges"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, message = F)
+```
+
+## Ridges
+The following figures represent ridge-plots of fat fractions as assesed on MRI in patients with TTNtv vs Healthy adults.
+
+First we load packages and perform data-wrangling
+
+```{r}
+library(tidyverse);library(viridis);library(ggridges);library(readxl);library(hrbrthemes);library(scico)
+dat_df<-read_excel("L:/LovbeskyttetMapper/TTNtv muscle phenotype/Resultater/Data for R.xlsx", na = "NA")
+dat_df<- dat_df %>% 
+  dplyr::mutate(thigh_FF = (thigh_ant_fat+thigh_post_fat+thigh_med_fat)/(thigh_ant_total+thigh_post_total+thigh_med_total)*100,
+                calf_FF=  (calf_ant_fat+calf_post_fat+calf_medsup_fat+calf_latsup_fat+calf_lat_fat)/(calf_ant_total+calf_post_total+calf_medsup_total+calf_latsup_total+calf_lat_total)*100,
+                s2_FF = (s2_gmax_fat+s2_gmed_fat+s2_gmin_fat)/(s2_gmax_total+s2_gmed_total+s2_gmin_total)*100,
+                mf_FF = (l4_mf_fat+th12_mf_fat)/(l4_mf_total+th12_mf_total)*100,
+                es_FF = (l4_es_fat+th12_es_fat)/(l4_es_total+th12_es_total)*100,
+                l4_FF = (l4_es_fat+l4_mf_fat+l4_pm_fat)/(l4_es_total+l4_mf_total+l4_pm_total)*100,
+                th12_FF = (th12_es_fat+th12_mf_fat)/(th12_es_total+th12_mf_total)*100,
+                back_FF = (s2_gmax_fat+s2_gmed_fat+s2_gmin_fat+l4_mf_fat+th12_mf_fat+l4_es_fat+th12_es_fat+l4_pm_fat)/(s2_gmax_total+s2_gmed_total+s2_gmin_total+l4_mf_total+th12_mf_total+l4_es_total+th12_es_total+l4_pm_total)*100,
+                BSA = 0.20247*(Height/100)^0.725*Weight^0.425,
+                LVIDd_index = LVIDd/BSA,
+                LV_pred = LVIDd/(45.3*BSA^(1/3)-0.03*Age-7.2))
+
+
+```
+
+Next up we make one nice ridge
+
+```{r}
+
+p1 <- dat_df %>% 
+  pivot_longer(cols = c(thigh_FF,calf_FF, s2_FF, c6_deep, l4_FF, th12_FF), names_to = "muscle") %>%  
+  
+  mutate(group = factor(Gruppe, labels = c("TTNtv", "Healthy")),
+         muscle = factor(muscle, 
+                         levels = c("calf_FF", "thigh_FF","s2_FF", "l4_FF","th12_FF", "c6_deep" ),
+                         labels = c("Calf", "Thigh", "S2", "L4", "Th12", "C6")))%>%
+  ggplot(aes(x = value, y=muscle, fill = group))+
+  geom_density_ridges(alpha = 0.5, jittered_points=T,point_alpha=2,point_shape=21, 
+                      #bandwith = 0.1,
+                      #rel_min_height = 0.01,
+                      #scale = .5,
+                      #position = "raincloud"
+                       #position = position_points_jitter(width = 0.05, height = 0), point_shape = "|",
+                      seed = 42)+
+  stat_summary(color = "black", fun = function(x) mean(x, na.rm = TRUE), geom = "point", size = 3, shape = 23, alpha = 1, stroke = 1, show.legend = F)+
+  annotate("text", x=50, y=6.25, label = paste0("p= ", round(summary.lm(lm(c6_deep~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=50, y=5.25, label = paste0("p= ", round(summary.lm(lm(th12_FF~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=50, y=4.25, label = paste0("p= ", round(summary.lm(lm(l4_FF~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=50, y=3.25, label = paste0("p= ", round(summary.lm(lm(s2_FF~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=50, y=2.25, label = paste0("p= ", round(summary.lm(lm(thigh_FF~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=50, y=1.25, label = paste0("p= ", round(summary.lm(lm(calf_FF~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  #scale_fill_viridis(discrete = T)+
+  #scale_color_viridis(discrete = T)+
+  scale_fill_scico_d(palette = "batlow")+
+  scale_color_scico_d(palette = "batlow")+
+  #scale_fill_scico_d(palette = "tofino")+
+  #scale_color_scico_d(palette = "tofino")+
+  #scale_fill_scico_d(palette = "roma")+
+  #scale_color_scico_d(palette = "roma")+
+  guides(color = F)+
+  scale_x_continuous(name = "Fat fraction (%)", limits = c(0,55), breaks = seq(0,60,10))+
+  labs(title = "Muscle groups of the back and leg", x = "Fat fraction in %", caption = "p corrected for age, BMI and sex")+
+  theme_ridges()+theme(legend.position = c(0.9,.9), legend.background = element_blank(), legend.title = element_blank())
+p1
+
+ggsave("Figure 1 - Ridge-plot.png", units = "cm", height = 24, width = 24, dpi = 1200)
+#ggsave("Figure 1 - Ridge-plot 2.png", units = "cm", height = 20, width = 20, dpi = 1200)
+```
+
+### Ridges for individual muscle groups
+
+```{r}
+p2<- dat_df %>% 
+  pivot_longer(cols = c(thigh_ant,thigh_med,thigh_post,calf_ant, calf_latsup, calf_lat, calf_medsup, calf_post), names_to = "muscle") %>%  
+  mutate(group = factor(Gruppe, labels = c("TTNtv", "Healthy")),
+         muscle = factor(muscle, levels = c("thigh_ant","thigh_med","thigh_post","calf_ant", "calf_latsup", "calf_lat", "calf_medsup", "calf_post"))) %>%   
+  ggplot(aes(x = value, y=muscle, fill = group))+
+  geom_density_ridges(alpha = 0.5, jittered_points=T,point_alpha=1,point_shape=21)+
+  stat_summary(color = "black", fun = function(x) mean(x, na.rm = TRUE), geom = "point", size = 3, shape = 23, alpha = 1, stroke = 1, show.legend = F)+
+  annotate("text", x=25, y=1.25, label = paste0("p= ", round(summary.lm(lm(thigh_ant~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=25, y=2.25, label = paste0("p= ", round(summary.lm(lm(thigh_med~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=25, y=3.25, label = paste0("p= ", round(summary.lm(lm(thigh_post~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=25, y=4.25, label = paste0("p= ", round(summary.lm(lm(calf_ant~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=25, y=5.25, label = paste0("p= ", round(summary.lm(lm(calf_latsup~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=25, y=6.25, label = paste0("p= ", round(summary.lm(lm(calf_lat~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=25, y=7.25, label = paste0("p= ", round(summary.lm(lm(calf_medsup~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=25, y=8.25, label = paste0("p= ", round(summary.lm(lm(calf_post~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  #scale_fill_viridis(discrete = T)+
+  #scale_color_viridis(discrete = T)+
+  scale_fill_scico_d(palette = "batlow")+
+  scale_color_scico_d(palette = "batlow")+
+  #scale_fill_scico_d(palette = "tofino")+
+  #scale_color_scico_d(palette = "tofino")+
+  #scale_fill_scico_d(palette = "roma")+
+  #scale_color_scico_d(palette = "roma")+
+  scale_x_continuous(name = "Fat fraction (%)", limits = c(0,30), breaks = seq(0,30,5))+
+  labs(title = "Leg muscles", y = "Muscle", caption = "p corrected for age, BMI and sex")+
+  theme_ridges()+theme(legend.position = c(0.8,.975), legend.background = element_blank(), legend.title = element_blank())
+#ggsave("Figure 2 - Ridge-plot.png", units = "cm", height = 20, width = 20, dpi = 1200)
+ggsave("Figure 2 - Ridge-plot.png", units = "cm", height = 24, width = 24, dpi = 1200)
+```
+
+and the final one for back muscles.
+
+```{r}
+p3 <- dat_df %>% 
+  pivot_longer(cols = c(s2_gmax, s2_gmed, s2_gmin, l4_es, l4_multi, l4_pm, th12_es, th12_multi, c6_deep), names_to = "muscle") %>%  
+  mutate(group = factor(Gruppe, labels = c("TTNtv", "Healthy")),
+         muscle = factor(muscle, levels = c("c6_deep","th12_es", "th12_multi", "l4_es", "l4_multi", "l4_pm","s2_gmax", "s2_gmed", "s2_gmin"),
+                         labels = c("Deep muscles C6", "Erector spinae Th12", "Multifidus Th12", "Erector spinae L4", "Multifidus L4", "Psoas major", "Gluteus max", "Gluteus med", "Gluteus min"))) %>%   
+  ggplot(aes(x = value, y=muscle, fill = group))+
+  geom_density_ridges(alpha = 0.5, jittered_points=T,point_alpha=1,point_shape=21)+
+  stat_summary(color = "black", fun = function(x) mean(x, na.rm = TRUE), geom = "point", size = 3, shape = 23, alpha = 1, stroke = 1, show.legend = F)+
+  annotate("text", x=60, y=1.25, label = paste0("p= ", round(summary.lm(lm(c6_deep~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=60, y=2.25, label = paste0("p= ", round(summary.lm(lm(th12_es~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=60, y=3.25, label = paste0("p= ", round(summary.lm(lm(th12_multi~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=60, y=4.25, label = paste0("p= ", round(summary.lm(lm(l4_es~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=60, y=5.25, label = paste0("p= ", round(summary.lm(lm(l4_multi~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=60, y=6.25, label = paste0("p= ", round(summary.lm(lm(l4_pm~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=60, y=7.25, label = paste0("p= ", round(summary.lm(lm(s2_gmax~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=60, y=8.25, label = paste0("p= ", round(summary.lm(lm(s2_gmed~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=60, y=9.25, label = paste0("p= ", round(summary.lm(lm(s2_gmin~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  #scale_fill_viridis(discrete = T)+
+  #scale_color_viridis(discrete = T)+
+  scale_fill_scico_d(palette = "batlow")+
+  scale_color_scico_d(palette = "batlow")+
+  #scale_fill_scico_d(palette = "tofino")+
+  #scale_color_scico_d(palette = "tofino")+
+  #scale_fill_scico_d(palette = "roma")+
+  #scale_color_scico_d(palette = "roma")+
+  scale_x_continuous(name = "Fat fraction (%)", limits = c(-5,65), breaks = seq(0,60,10))+
+  labs(title = "Back muscles", y = "Muscle", caption = "p corrected for age, BMI and sex")+
+  theme_ridges()+theme(legend.position = c(0.8,.975), legend.background = element_blank(), legend.title = element_blank())
+ggsave("Figure 3 - Ridge-plot.png", units = "cm", height = 24, width = 24, dpi = 1200)
+#ggsave("Figure 3 - Ridge-plot.png", units = "cm", height = 16, width = 28, dpi = 1200)
+ cowplot::plot_grid(p2, p3, labels = "AUTO")
+ggsave("supp_1.png", dpi = 1200, units = "cm", width = 35, height = 20)
+
+```
+
+```{r}
+
+p<- dat_df %>% 
+  pivot_longer(cols = c(thigh_FF,calf_FF, back_FF), names_to = "muscle") %>%  
+  
+  mutate(group = factor(Gruppe, labels = c("TTNtv", "Healthy")),
+         muscle = factor(muscle, 
+                         levels = c("calf_FF", "thigh_FF","back_FF"),
+                         labels = c("Calf", "Thigh", "Back")))%>%
+  ggplot(aes(x = value, y=muscle, fill = group))+
+  geom_density_ridges(alpha = 0.5, jittered_points=T,point_alpha=2,point_shape=21, point_size =2,
+                      scale = 0.975,
+                      #bandwith = 0.1,
+                      #rel_min_height = 0.01,
+                      #scale = .5,
+                      #position = "raincloud"
+                       #position = position_points_jitter(width = 0.05, height = 0), point_shape = "|",
+                      seed = 42)+
+  stat_summary(color = "black", fun = function(x) mean(x, na.rm = TRUE), geom = "point", size = 3, shape = 23, alpha = 1, stroke = 1, show.legend = F)+
+  annotate("text", x=40, y=3.2, label = paste0("p= ", round(summary.lm(lm(back_FF~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=40, y=2.2, label = paste0("p= ", round(summary.lm(lm(thigh_FF~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  annotate("text", x=40, y=1.2, label = paste0("p= ", round(summary.lm(lm(calf_FF~Gruppe+Age+BMI+Sex, data = dat_df ))$coefficients[2,4],3)))+
+  scale_fill_scico_d(palette = "batlow")+
+  scale_color_scico_d(palette = "batlow")+
+  scale_x_continuous(name = "Fat fraction (%)", limits = c(0,40), breaks = seq(0,60,5))+
+  labs(title = "", x = "Fat fraction in %", caption = "p corrected for age, BMI and sex")+
+  theme_ridges()+theme(legend.position = c(0.9,.95), legend.background = element_blank(), legend.title = element_blank())
+p
+ggsave("Figure 1- Ridge-plot_1.png", units = "cm", height = 20, width = 20, dpi = 1600)
+```
