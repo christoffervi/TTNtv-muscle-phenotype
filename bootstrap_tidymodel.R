@@ -44,6 +44,7 @@ plot_2<-
   scale_x_continuous(limits = c(-0.2,5), breaks = seq(0,5,0.5))+
   scale_y_continuous(limits = c(-1,800), breaks = seq(0,800,100))+
   coord_cartesian(clip = "off",expand = F )
+plot_2
 ggsave("Histogram_bootstrap estimates.png", units = "cm", width = 16, height = 12, dpi = 1200)
 
 
@@ -118,6 +119,7 @@ plot_1<-
         legend.background = element_blank(), legend.position = c(0.9,0.9), legend.title = element_blank(),
         axis.text = element_text(color = "black", family = "serif"))+
   coord_flip()
+plot_1
 ggsave("Boot_LM.png", units = "cm", dpi = 1000, height = 12, width = 16)
 
 
