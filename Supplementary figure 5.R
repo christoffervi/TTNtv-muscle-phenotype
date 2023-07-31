@@ -4,6 +4,7 @@ library(tidyverse); library(patchwork)
 x1<-
   dat_df %>% #lm(back_FF~Age, data = .) %>% 
   #broom::augment() %>% 
+  mutate(Gruppe= factor(Gruppe, levels = c(1,3,2), labels = c("TTNtv", "DCM", "Control"))) %>% 
   ggplot(aes(x=Age))+
   geom_point(aes(y=back_FF, color = factor(Gruppe)), size = 3, show.legend = F)+ 
   geom_smooth(aes(y=back_FF),method = "lm", color = scico(1, palette = "batlow", begin = .5))+
@@ -21,6 +22,7 @@ x1<-
 
 x2<-
   dat_df %>% #lm(back_FF~Age, data = .) %>% 
+  mutate(Gruppe= factor(Gruppe, levels = c(1,3,2), labels = c("TTNtv", "DCM", "Control"))) %>% 
   #broom::augment() %>% 
   ggplot(aes(x=Age))+
   geom_point(aes(y=thigh_FF, color = factor(Gruppe)), size = 3, show.legend = F)+ 
@@ -38,7 +40,7 @@ x2<-
 
 x3<-
   dat_df %>% 
-  mutate(Gruppe= factor(Gruppe, labels = c("TTNtv", "Control"))) %>% 
+  mutate(Gruppe= factor(Gruppe, levels = c(1,3,2), labels = c("TTNtv", "DCM", "Control"))) %>% 
   ggplot(aes(x=Age))+
   geom_point(aes(y=calf_FF, color = factor(Gruppe)), size = 3, show.legend = T)+ 
   geom_smooth(aes(y=calf_FF),method = "lm", color = scico(1, palette = "batlow", begin = .5))+

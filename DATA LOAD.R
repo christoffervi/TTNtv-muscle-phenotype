@@ -4,6 +4,7 @@ library(hrbrthemes);library(scico)
 
 dat_df<-read_csv("~/Dropbox/10 R/TTNtv-muscle-phenotype/ttntv.csv", na = "NA")
 
+dat_df<-read_csv2("~/Dropbox/10 R/TTNtv-muscle-phenotype/data_r.csv", na = "NA")
 
 
 dat_df_scaled <- dat_df %>% select(MD_L_elbow_flex, MD_L_elbow_ext, MD_L_hip_ext, MD_L_hip_flex, MD_L_ankle_dflex,MD_L_ankle_pflex, MD_L_knee_ext, MD_L_knee_flex,
