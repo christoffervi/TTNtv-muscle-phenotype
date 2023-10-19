@@ -12,7 +12,7 @@ x1<-
   scale_x_continuous(breaks = seq(0,80,5))+
   scale_y_continuous(breaks = seq(0,100,5))+
   theme_classic(base_family = "Roboto")+
-  geom_richtext(aes(x= 28, y = 30, label= "**R^2 = 0.48**"), family = "Roboto",
+  geom_richtext(aes(x= 28, y = 30, label= "**R^2 = 0.49**"), family = "Roboto",
                 label.color = NA)+
   labs(y = "Fat-fraction (%)",
        title = "Back muscles")+
@@ -31,7 +31,7 @@ x2<-
   scale_x_continuous(breaks = seq(0,80,5))+
   scale_y_continuous(breaks = seq(0,100,5))+
   theme_classic(base_family = "Roboto")+
-  geom_richtext(aes(x= 28, y = 30, label= "**R^2 = 0.24**"), family = "Roboto",
+  geom_richtext(aes(x= 28, y = 30, label= "**R^2 = 0.27**"), family = "Roboto",
                 label.color = NA)+
   labs(y = "Fat-fraction (%)",
        title = "Thigh muscles")+
@@ -48,7 +48,7 @@ x3<-
   scale_x_continuous(breaks = seq(0,80,5))+
   scale_y_continuous(breaks = seq(0,100,5))+
   theme_classic(base_family = "Roboto")+
-  geom_richtext(aes(x= 28, y = 30, label= "**R^2 = 0.17**"), family = "Roboto",
+  geom_richtext(aes(x= 28, y = 30, label= "**R^2 = 0.21**"), family = "Roboto",
                 label.color = NA)+
   labs(y = "Fat-fraction (%)",
        title = "Calf muscles")+
@@ -58,5 +58,7 @@ x3<-
         legend.text = element_markdown(family = "Roboto"))+
   coord_cartesian(xlim = c(20,81), y= c(0,36), expand = F)
 x1/x2/x3
+
+ggsave(filename = 'supp5.pdf', device = cairo_pdf , height = 12*2.1, width = 12, units = "cm", dpi =3300)
 
 ggsave("supp5.png", dpi = 1200, units = "cm", width = 12, height = 12*2.1)
